@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-wanted-publisher",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "An Obsidian plugin for publishing notes to Wanted's platform",
 	"main": "main.js",
 	"scripts": {

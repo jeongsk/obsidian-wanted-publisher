@@ -1,22 +1,6 @@
-import {
-	App,
-	Editor,
-	MarkdownView,
-	Modal,
-	Notice,
-	Plugin,
-} from "obsidian";
+import { App, Editor, MarkdownView, Modal, Notice, Plugin } from "obsidian";
 import WantedPublisherSettingTab from "./setting-tab";
-
-// Remember to rename these classes and interfaces!
-
-interface WantedPublisherPluginSettings {
-	token: string;
-}
-
-const DEFAULT_SETTINGS: WantedPublisherPluginSettings = {
-	token: "",
-};
+import { WantedPublisherPluginSettings } from "./constants";
 
 export default class WantedPublisherPlugin extends Plugin {
 	settings: WantedPublisherPluginSettings;

@@ -19,7 +19,7 @@ export default class Client {
 
 	async publishPost(post: PostContent): Promise<PublishResponse> {
 		return this.makeRequest<PublishResponse, PostContent>(
-			"/",
+			"/social/articles",
 			"POST",
 			post,
 		);
@@ -30,7 +30,7 @@ export default class Client {
 		post: PostContent,
 	): Promise<PublishResponse> {
 		return this.makeRequest<PublishResponse, PostContent>(
-			`/${postId}`,
+			`/social/articles/${postId}`,
 			"PUT",
 			post,
 		);

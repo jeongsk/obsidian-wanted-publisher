@@ -51,8 +51,7 @@ export default class Client {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
 
-			if(response.arrayBuffer.byteLength > 0)
-				return response?.json as T;
+			if (response.arrayBuffer.byteLength > 0) return response?.json as T;
 			return {} as T;
 		} catch (error) {
 			console.error("API request failed:", error);

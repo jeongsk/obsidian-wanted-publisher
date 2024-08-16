@@ -47,6 +47,7 @@ export default class WantedPublisherPlugin extends Plugin {
 				const client = new Client(this.settings.token);
 
 				if (postId) {
+					console.log('updatePost')
 					await client.updatePost({
 						postId,
 						title,
@@ -55,6 +56,7 @@ export default class WantedPublisherPlugin extends Plugin {
 						bodyImageKeys: [],
 					});
 				} else {
+					console.log('publishPost')
 					const results = await client.publishPost({
 						title,
 						coverImageKey: "",

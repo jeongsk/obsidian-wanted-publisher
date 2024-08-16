@@ -31,47 +31,63 @@ export default class WantedPublisherPlugin extends Plugin {
 	}
 
 	private async handlePublish() {
+		try {
+			const activeFile = this.getActiveFile();
+
+			const title = activeFile.basename;
+			const formattedContent = getContentWithoutFrontmatter(
+				await this.app.vault.read(activeFile),
+			);
+			if (!formattedContent) {
+				return new Notice(
+					"Empty note. Please write something to publish.",
+				);
+			}
+
+			const frontmatter =
+				this.app.metadataCache.getFileCache(activeFile)?.frontmatter ||
+				{};
+			const postId = frontmatter.socialPostId;
+
+			const client = new Client(this.settings.token);
+
+			if (postId) {
+				await client.updatePost({
+					postId,
+					title,
+					coverImageKey: "",
+					formattedContent,
+					bodyImageKeys: [],
+				});
+			} else {
+				const results = await client.publishPost({
+					title,
+					coverImageKey: "",
+					formattedContent,
+					bodyImageKeys: [],
+				});
+				frontmatter["socialPostId"] = results.postId;
+				const newFileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${formattedContent}`;
+				await this.app.vault.modify(activeFile, newFileContent);
+			}
+		} catch (err) {
+			console.error(err);
+			return new Notice(
+				err.message ||
+					"An error occurred while publishing. Please try again.",
+			);
+		}
+	}
+
+	private getActiveFile(): TFile {
 		const markdownView =
 			this.app.workspace.getActiveViewOfType(MarkdownView);
-		const activeFile = markdownView?.file;
-		if (!activeFile) {
-			return new Notice(
+		if (!markdownView?.file) {
+			throw new Error(
 				"No open note found. Please open a note to publish.",
 			);
 		}
-		const title = activeFile.basename;
-		const formattedContent = getContentWithoutFrontmatter(
-			await this.app.vault.read(activeFile),
-		);
-		if (!formattedContent) {
-			return new Notice("Empty note. Please write something to publish.");
-		}
-
-		const frontmatter =
-			this.app.metadataCache.getFileCache(activeFile)?.frontmatter || {};
-		const postId = frontmatter.socialPostId;
-
-		const client = new Client(this.settings.token);
-
-		if (postId) {
-			await client.updatePost({
-				postId,
-				title,
-				coverImageKey: "",
-				formattedContent,
-				bodyImageKeys: [],
-			});
-		} else {
-			const results = await client.publishPost({
-				title,
-				coverImageKey: "",
-				formattedContent,
-				bodyImageKeys: [],
-			});
-			frontmatter["socialPostId"] = results.postId;
-			const newFileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${formattedContent}`;
-			await this.app.vault.modify(activeFile, newFileContent);
-		}
+		return markdownView.file;
 	}
 
 	async processFrontMatter(file: TFile): Promise<FrontMatterCache> {

@@ -17,60 +17,61 @@ export default class WantedPublisherPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
+		this.addPublishCommand();
+
+		this.addSettingTab(new WantedPublisherSettingTab(this.app, this));
+	}
+
+	private addPublishCommand() {
 		this.addCommand({
 			id: "publish",
 			name: "Publish",
-			callback: async () => {
-				const markdownView =
-					this.app.workspace.getActiveViewOfType(MarkdownView);
-				const activeFile = markdownView?.file;
-				if (!activeFile) {
-					return new Notice(
-						"No open note found. Please open a note to publish.",
-					);
-				}
-				const title = activeFile.basename;
-				const formattedContent = getContentWithoutFrontmatter(
-					await this.app.vault.read(activeFile),
-				);
-				if (!formattedContent) {
-					return new Notice(
-						"Empty note. Please write something to publish.",
-					);
-				}
-
-				const frontmatter =
-					this.app.metadataCache.getFileCache(activeFile)
-						?.frontmatter || {};
-				const postId = frontmatter.socialPostId;
-
-				const client = new Client(this.settings.token);
-
-				if (postId) {
-					console.log('updatePost')
-					await client.updatePost({
-						postId,
-						title,
-						coverImageKey: "",
-						formattedContent,
-						bodyImageKeys: [],
-					});
-				} else {
-					console.log('publishPost')
-					const results = await client.publishPost({
-						title,
-						coverImageKey: "",
-						formattedContent,
-						bodyImageKeys: [],
-					});
-					frontmatter["socialPostId"] = results.postId;
-					const newFileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${formattedContent}`;
-					await this.app.vault.modify(activeFile, newFileContent);
-				}
-			},
+			callback: () => this.handlePublish(),
 		});
+	}
 
-		this.addSettingTab(new WantedPublisherSettingTab(this.app, this));
+	private async handlePublish() {
+		const markdownView =
+			this.app.workspace.getActiveViewOfType(MarkdownView);
+		const activeFile = markdownView?.file;
+		if (!activeFile) {
+			return new Notice(
+				"No open note found. Please open a note to publish.",
+			);
+		}
+		const title = activeFile.basename;
+		const formattedContent = getContentWithoutFrontmatter(
+			await this.app.vault.read(activeFile),
+		);
+		if (!formattedContent) {
+			return new Notice("Empty note. Please write something to publish.");
+		}
+
+		const frontmatter =
+			this.app.metadataCache.getFileCache(activeFile)?.frontmatter || {};
+		const postId = frontmatter.socialPostId;
+
+		const client = new Client(this.settings.token);
+
+		if (postId) {
+			await client.updatePost({
+				postId,
+				title,
+				coverImageKey: "",
+				formattedContent,
+				bodyImageKeys: [],
+			});
+		} else {
+			const results = await client.publishPost({
+				title,
+				coverImageKey: "",
+				formattedContent,
+				bodyImageKeys: [],
+			});
+			frontmatter["socialPostId"] = results.postId;
+			const newFileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${formattedContent}`;
+			await this.app.vault.modify(activeFile, newFileContent);
+		}
 	}
 
 	async processFrontMatter(file: TFile): Promise<FrontMatterCache> {

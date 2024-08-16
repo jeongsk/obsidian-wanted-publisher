@@ -129,7 +129,7 @@ export default class WantedPublisherPlugin extends Plugin {
 		formattedContent: string;
 		frontmatter: FrontMatterCache;
 	}> {
-		const title = file.basename;
+		const title = file.basename.slice(0, 50);
 		const content = await this.app.vault.read(file);
 		const formattedContent = getContentWithoutFrontmatter(content);
 		if (!formattedContent) {

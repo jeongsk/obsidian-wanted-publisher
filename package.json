@@ -4,8 +4,8 @@
 	"description": "An Obsidian plugin for publishing notes to Wanted's platform",
 	"main": "main.js",
 	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"dev": "DOTENV_CONFIG_PATH=.env.development node -r dotenv/config esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && DOTENV_CONFIG_PATH=.env.production node -r dotenv/config esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],
@@ -21,5 +21,8 @@
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
 	},
-	"packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638"
+	"packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638",
+	"dependencies": {
+		"dotenv": "^16.4.5"
+	}
 }

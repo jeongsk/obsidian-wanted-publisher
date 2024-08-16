@@ -11,6 +11,13 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === "production");
 
+const define = {};
+
+for (const k in process.env) {
+  define[`process.env.${k}`] = JSON.stringify(process.env[k]);
+}
+console.log(process.env)
+
 const context = await esbuild.context({
 	banner: {
 		js: banner,
@@ -38,7 +45,8 @@ const context = await esbuild.context({
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
 	outfile: "main.js",
-});
+	define
+})
 
 if (prod) {
 	await context.rebuild();

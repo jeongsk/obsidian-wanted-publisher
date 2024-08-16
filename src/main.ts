@@ -104,8 +104,7 @@ export default class WantedPublisherPlugin extends Plugin {
 		title: string,
 		formattedContent: string,
 	) {
-		await client.updatePost({
-			postId,
+		await client.updatePost(postId, {
 			title,
 			coverImageKey: "",
 			formattedContent,

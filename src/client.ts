@@ -14,18 +14,23 @@ interface PublishResponse {
 	postId: number;
 }
 
-type UpdatePostContent = Partial<PostContent> & { postId: number };
-
 export default class Client {
 	constructor(private readonly accessToken: string) {}
 
 	async publishPost(post: PostContent): Promise<PublishResponse> {
-		return this.makeRequest<PublishResponse, PostContent>("", "POST", post);
+		return this.makeRequest<PublishResponse, PostContent>(
+			"/",
+			"POST",
+			post,
+		);
 	}
 
-	async updatePost(post: UpdatePostContent): Promise<PublishResponse> {
-		return this.makeRequest<PublishResponse, UpdatePostContent>(
-			`/${post.postId}`,
+	async updatePost(
+		postId: number,
+		post: PostContent,
+	): Promise<PublishResponse> {
+		return this.makeRequest<PublishResponse, PostContent>(
+			`/${postId}`,
 			"PUT",
 			post,
 		);

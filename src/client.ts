@@ -11,28 +11,50 @@ interface PostContent {
 }
 
 interface PublishResponse {
-    postId: number;
+	postId: number;
 }
 
+type UpdatePostContent = Partial<PostContent> & { postId: number };
+
 export default class Client {
-    constructor(private readonly accessToken: string) {}
+	constructor(private readonly accessToken: string) {}
 
-    async publishPost(post: PostContent): Promise<PublishResponse> {
-        const response = await this.makeRequest<PublishResponse>("/publish", post);
-        return response;
-    }
+	async publishPost(post: PostContent): Promise<PublishResponse> {
+		return this.makeRequest<PublishResponse, PostContent>("", "POST", post);
+	}
 
-    private async makeRequest<T, P = any>(endpoint: string, data: P): Promise<T> {
-        const response: RequestUrlResponse = await requestUrl({
-            url: `${API_URL}${endpoint}`,
-			method: "POST",
-			contentType: "application/json",
-            body: JSON.stringify(data),
-			headers: {
-				"Cookie": `${COOKIE_NAME}=${this.accessToken}`
+	async updatePost(post: UpdatePostContent): Promise<PublishResponse> {
+		return this.makeRequest<PublishResponse, UpdatePostContent>(
+			`/${post.postId}`,
+			"PUT",
+			post,
+		);
+	}
+
+	private async makeRequest<T, P = unknown>(
+		endpoint: string,
+		method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+		data?: P,
+	): Promise<T> {
+		try {
+			const response: RequestUrlResponse = await requestUrl({
+				url: `${API_URL}${endpoint}`,
+				method,
+				contentType: "application/json",
+				body: data ? JSON.stringify(data) : undefined,
+				headers: {
+					Cookie: `${COOKIE_NAME}=${this.accessToken}`,
+				},
+			});
+
+			if (!response.status.toString().startsWith("2")) {
+				throw new Error(`HTTP error! status: ${response.status}`);
 			}
-        });
 
-        return response.json as T;
+			return response.json as T;
+		} catch (error) {
+			console.error("API request failed:", error);
+			throw error;
+		}
 	}
 }

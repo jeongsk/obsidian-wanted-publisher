@@ -34,19 +34,7 @@ export default class WantedPublisherPlugin extends Plugin {
 		try {
 			const activeFile = this.getActiveFile();
 
-			const title = activeFile.basename;
-			const formattedContent = getContentWithoutFrontmatter(
-				await this.app.vault.read(activeFile),
-			);
-			if (!formattedContent) {
-				return new Notice(
-					"Empty note. Please write something to publish.",
-				);
-			}
-
-			const frontmatter =
-				this.app.metadataCache.getFileCache(activeFile)?.frontmatter ||
-				{};
+			const { title, formattedContent, frontmatter } = await this.preparePublishData(activeFile);
 			const postId = frontmatter.socialPostId;
 
 			const client = new Client(this.settings.token);
@@ -88,6 +76,24 @@ export default class WantedPublisherPlugin extends Plugin {
 			);
 		}
 		return markdownView.file;
+	}
+
+	private async preparePublishData(
+		file: TFile,
+	): Promise<{
+		title: string;
+		formattedContent: string;
+		frontmatter: FrontMatterCache;
+	}> {
+		const title = file.basename;
+		const content = await this.app.vault.read(file);
+		const formattedContent = getContentWithoutFrontmatter(content);
+		if (!formattedContent) {
+			throw new Error("Empty note. Please write something to publish.");
+		}
+		const frontmatter =
+			this.app.metadataCache.getFileCache(file)?.frontmatter || {};
+		return { title, formattedContent, frontmatter };
 	}
 
 	async processFrontMatter(file: TFile): Promise<FrontMatterCache> {

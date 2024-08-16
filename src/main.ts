@@ -34,30 +34,15 @@ export default class WantedPublisherPlugin extends Plugin {
 		try {
 			const activeFile = this.getActiveFile();
 
-			const { title, formattedContent, frontmatter } = await this.preparePublishData(activeFile);
-			const postId = frontmatter.socialPostId;
+			const { title, formattedContent, frontmatter } =
+				await this.preparePublishData(activeFile);
 
-			const client = new Client(this.settings.token);
-
-			if (postId) {
-				await client.updatePost({
-					postId,
-					title,
-					coverImageKey: "",
-					formattedContent,
-					bodyImageKeys: [],
-				});
-			} else {
-				const results = await client.publishPost({
-					title,
-					coverImageKey: "",
-					formattedContent,
-					bodyImageKeys: [],
-				});
-				frontmatter["socialPostId"] = results.postId;
-				const newFileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${formattedContent}`;
-				await this.app.vault.modify(activeFile, newFileContent);
-			}
+			await this.publishOrUpdatePost(
+				activeFile,
+				title,
+				formattedContent,
+				frontmatter,
+			);
 		} catch (err) {
 			console.error(err);
 			return new Notice(
@@ -65,6 +50,68 @@ export default class WantedPublisherPlugin extends Plugin {
 					"An error occurred while publishing. Please try again.",
 			);
 		}
+	}
+
+	private async publishOrUpdatePost(
+		file: TFile,
+		title: string,
+		formattedContent: string,
+		frontmatter: any,
+	) {
+		const client = new Client(this.settings.token);
+		const postId = frontmatter.socialPostId;
+
+		if (postId) {
+			await this.updateExistingPost(
+				client,
+				postId,
+				title,
+				formattedContent,
+			);
+		} else {
+			await this.createNewPost(
+				client,
+				file,
+				title,
+				formattedContent,
+				frontmatter,
+			);
+		}
+	}
+
+	private async createNewPost(
+		client: Client,
+		file: TFile,
+		title: string,
+		formattedContent: string,
+		frontmatter: any,
+	) {
+		const results = await client.publishPost({
+			title,
+			coverImageKey: "",
+			formattedContent,
+			bodyImageKeys: [],
+		});
+		frontmatter["socialPostId"] = results.postId;
+		const newFileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${formattedContent}`;
+		await this.app.vault.modify(file, newFileContent);
+		return new Notice("Post created successfully!");
+	}
+
+	private async updateExistingPost(
+		client: Client,
+		postId: number,
+		title: string,
+		formattedContent: string,
+	) {
+		await client.updatePost({
+			postId,
+			title,
+			coverImageKey: "",
+			formattedContent,
+			bodyImageKeys: [],
+		});
+		return new Notice("Post updated successfully!");
 	}
 
 	private getActiveFile(): TFile {
@@ -78,9 +125,7 @@ export default class WantedPublisherPlugin extends Plugin {
 		return markdownView.file;
 	}
 
-	private async preparePublishData(
-		file: TFile,
-	): Promise<{
+	private async preparePublishData(file: TFile): Promise<{
 		title: string;
 		formattedContent: string;
 		frontmatter: FrontMatterCache;

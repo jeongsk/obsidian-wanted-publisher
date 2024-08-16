@@ -1,96 +1,69 @@
-# Obsidian Sample Plugin
+# Wanted Social Publisher Obsidian Plugin
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Wanted Social Publisher는 Obsidian에서 작성한 노트를 Wanted 소셜 플랫폼에 쉽게 게시할 수 있게 해주는 플러그인입니다.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## 특징 및 장점
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+- Obsidian에서 직접 Wanted 소셜로 게시물 발행
+- Markdown 형식 지원으로 편리한 글 작성
+- 기존 게시물 업데이트 지원
+- 간편한 사용자 인터페이스
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## 설치 방법
 
-## First time developing plugins?
+이 플러그인은 BRAT(Obsidian Beta Reviewers Auto-update Tester)를 통해 설치할 수 있습니다.
 
-Quick starting guide for new plugin devs:
+1. Obsidian에서 [BRAT 플러그인](https://obsidian.md/plugins?id=obsidian42-brat)을 먼저 설치하세요. (커뮤니티 플러그인에서 "BRAT"를 검색하여 설치)
+2. BRAT을 활성화하고 BRAT 설정으로 이동하세요.
+3. "Add Beta plugin" 섹션에서 다음 저장소 주소를 입력하세요: `https://github.com/jeongsk/obsidian-wanted-publisher`
+4. "Add plugin" 버튼을 클릭하세요.
+5. 커뮤니티 플러그인 목록으로 이동하여 "Wanted Social Publisher"를 찾아 활성화하세요.
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## 사용 방법
 
-## Releasing new releases
+1. Obsidian에서 Wanted 소셜에 발행할 노트를 엽니다.
+2. 명령어 팔레트를 열고(Ctrl/Cmd + P) "Wanted Social Publisher"를 검색합니다.
+3. "Wanted Social Publisher: Publish to Wanted Social"을 선택합니다.
+4. 게시물 제목을 확인하고 필요하다면 수정합니다.
+5. "Publish" 버튼을 클릭하여 게시물을 발행합니다.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+## 기능
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+- [x] 원티드 소셜에 신규 게시물 업로드
+- [x] 원티드 소셜에 기존 게시물 업데이트
+- [ ] 게시물에 태그 추가(예정)
+- [ ] 이미지 업로드 지원(예정)
 
-## Adding your plugin to the community plugin list
+> **TIP**: 이미지 업로드 기능을 아직 지원하지 않으므로 [Imgur 플러그인](https://obsidian.md/plugins?id=obsidian-imgur-plugin)을 사용하는 것을 추천합니다.
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+## 설정
 
-## How to use
+플러그인 설정에서 AccessToken을 입력해야 합니다.
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+**AccessToken 획득 방법:**
 
-## Manually installing the plugin
+1. 웹 브라우저에서 원티드 소셜에 로그인합니다.
+2. 브라우저의 개발자 도구를 엽니다 (보통 F12 키).
+3. 개발자 도구의 "Application" 또는 "저장소" 탭으로 이동합니다.
+4. 왼쪽 사이드바에서 "Cookies"를 클릭하고 원티드 도메인을 선택합니다.
+5. `WWW_ONEID_ACCESS_TOKEN` 값을 찾아 복사합니다.
+6. 복사한 값을 Obsidian의 Wanted Social Publisher 플러그인 설정의 AccessToken 필드에 붙여넣습니다.
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+## 향후 계획
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+- 게시물에 태그 추가 기능 구현
+- 이미지 직접 업로드 지원
+- 게시물 미리보기 기능 추가
+- 게시물 초안 저장 기능 구현
 
-## Funding URL
+## 지원
 
-You can include funding URLs where people who use your plugin can financially support it.
+문제가 발생하거나 제안사항이 있으시면 [이슈 트래커](https://github.com/jeongsk/obsidian-wanted-publisher/issues)에 등록해 주세요.
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+## 기여
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+이 프로젝트에 기여하고 싶으시다면 [Pull Request](https://github.com/jeongsk/obsidian-wanted-publisher/pulls)를 보내주세요. 모든 기여를 환영합니다!
 
-If you have multiple URLs, you can also do:
+## 라이선스
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
-
-## API Documentation
-
-See https://github.com/obsidianmd/obsidian-api
+[MIT License](License.txt)

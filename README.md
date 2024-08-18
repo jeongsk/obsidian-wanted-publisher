@@ -1,6 +1,6 @@
-# Wanted Social Publisher Obsidian Plugin
+# Wanted Social Obsidian Plugin (Unofficial)
 
-Wanted Social Publisher는 Obsidian에서 작성한 노트를 Wanted 소셜 플랫폼에 쉽게 게시할 수 있게 해주는 플러그인입니다.
+Wanted Social Plugin은 [Obsidian](https://obsidian.md/)에서 작성한 노트를 Wanted 소셜 플랫폼에 쉽게 게시할 수 있게 해주는 플러그인입니다.
 
 ## 특징 및 장점
 
@@ -15,15 +15,15 @@ Wanted Social Publisher는 Obsidian에서 작성한 노트를 Wanted 소셜 플�
 
 1. Obsidian에서 [BRAT 플러그인](https://obsidian.md/plugins?id=obsidian42-brat)을 먼저 설치하세요. (커뮤니티 플러그인에서 "BRAT"를 검색하여 설치)
 2. BRAT을 활성화하고 BRAT 설정으로 이동하세요.
-3. "Add Beta plugin" 섹션에서 다음 저장소 주소를 입력하세요: `https://github.com/jeongsk/obsidian-wanted-publisher`
+3. "Add Beta plugin" 섹션에서 다음 저장소 주소를 입력하세요: `https://github.com/jeongsk/obsidian-wanted-social`
 4. "Add plugin" 버튼을 클릭하세요.
-5. 커뮤니티 플러그인 목록으로 이동하여 "Wanted Social Publisher"를 찾아 활성화하세요.
+5. 커뮤니티 플러그인 목록으로 이동하여 "Wanted Social"를 찾아 활성화하세요.
 
 ## 사용 방법
 
 1. Obsidian에서 Wanted 소셜에 발행할 노트를 엽니다.
-2. 명령어 팔레트를 열고(Ctrl/Cmd + P) "Wanted Social Publisher"를 검색합니다.
-3. "Wanted Social Publisher: Publish to Wanted Social"을 선택합니다.
+2. 명령어 팔레트를 열고(Ctrl/Cmd + P) "Wanted Social"를 검색합니다.
+3. "Wanted Social: Publish"을 선택합니다.
 4. 게시물 제목을 확인하고 필요하다면 수정합니다.
 5. "Publish" 버튼을 클릭하여 게시물을 발행합니다.
 
@@ -47,7 +47,7 @@ Wanted Social Publisher는 Obsidian에서 작성한 노트를 Wanted 소셜 플�
 3. 개발자 도구의 "Application" 또는 "저장소" 탭으로 이동합니다.
 4. 왼쪽 사이드바에서 "Cookies"를 클릭하고 원티드 도메인을 선택합니다.
 5. `WWW_ONEID_ACCESS_TOKEN` 값을 찾아 복사합니다.
-6. 복사한 값을 Obsidian의 Wanted Social Publisher 플러그인 설정의 AccessToken 필드에 붙여넣습니다.
+6. 복사한 값을 Obsidian의 Wanted Social 플러그인 설정의 AccessToken 필드에 붙여넣습니다.
 
 ## 향후 계획
 

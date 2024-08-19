@@ -3,15 +3,30 @@ import { requestUrl, RequestUrlResponse } from "obsidian";
 const API_URL = process.env.API_URL || "http://localhost:3000";
 const COOKIE_NAME = process.env.COOKIE_NAME || "accessToken";
 
-interface PostContent {
+export interface PostContent {
 	title: string;
 	coverImageKey: string;
 	formattedContent: string;
 	bodyImageKeys: string[];
 }
 
-interface PublishResponse {
+export interface PublishResponse {
 	postId: number;
+}
+
+export interface Team {
+	isCreator: boolean;
+	isFollowed: boolean;
+	id: number;
+	name: string;
+	description: string;
+	viewsCount: number;
+	avatar: string | null;
+	creatorId: number;
+	isPublic: boolean;
+	type: string;
+	followerCount: number;
+	url: string;
 }
 
 export default class Client {
@@ -21,25 +36,29 @@ export default class Client {
 		return this.makeRequest<PublishResponse, PostContent>(
 			"/social/articles",
 			"POST",
-			post,
+			post
 		);
 	}
 
 	async updatePost(
 		postId: number,
-		post: PostContent,
+		post: PostContent
 	): Promise<PublishResponse> {
 		return this.makeRequest<PublishResponse, PostContent>(
 			`/social/articles/${postId}`,
 			"PUT",
-			post,
+			post
 		);
+	}
+
+	async getTeamList(): Promise<Team[]> {
+		return this.makeRequest<Team[]>("/team");
 	}
 
 	private async makeRequest<T, P = unknown>(
 		endpoint: string,
 		method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
-		data?: P,
+		data?: P
 	): Promise<T> {
 		try {
 			const response: RequestUrlResponse = await requestUrl({

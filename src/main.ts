@@ -6,10 +6,19 @@ import {
 	TFile,
 	stringifyYaml,
 } from "obsidian";
-import Client from "./client";
-import { DEFAULT_SETTINGS, WantedPublisherPluginSettings } from "./constants";
-import { getContentWithoutFrontmatter } from "./helpers/frontmatter";
+import Client, { PostContent } from "./apis/client";
+import {
+	DEFAULT_SETTINGS,
+	FRONTMATTER_KEYS,
+	WantedPublisherPluginSettings,
+} from "./constants";
+import {
+	getContentWithoutFrontmatter,
+	isFrontMatter,
+} from "./helpers/frontmatter";
 import WantedPublisherSettingTab from "./setting-tab";
+import { FrontMatter } from "./types";
+import ConfirmPublishModal from "./modals/confirm-publish-modal";
 
 export default class WantedPublisherPlugin extends Plugin {
 	settings: WantedPublisherPluginSettings;
@@ -34,81 +43,101 @@ export default class WantedPublisherPlugin extends Plugin {
 		try {
 			const activeFile = this.getActiveFile();
 
-			const { title, formattedContent, frontmatter } =
+			const { formattedContent, frontmatter } =
 				await this.preparePublishData(activeFile);
 
 			await this.publishOrUpdatePost(
 				activeFile,
-				title,
 				formattedContent,
-				frontmatter,
+				frontmatter
 			);
 		} catch (err) {
 			console.error(err);
 			return new Notice(
 				err.message ||
-					"An error occurred while publishing. Please try again.",
+					"An error occurred while publishing. Please try again."
 			);
 		}
 	}
 
 	private async publishOrUpdatePost(
 		file: TFile,
-		title: string,
 		formattedContent: string,
-		frontmatter: any,
+		frontmatter: FrontMatter | FrontMatterCache
 	) {
 		const client = new Client(this.settings.token);
-		const postId = frontmatter.socialPostId;
 
-		if (postId) {
-			await this.updateExistingPost(
-				client,
-				postId,
-				title,
-				formattedContent,
-			);
-		} else {
-			await this.createNewPost(
-				client,
-				file,
-				title,
-				formattedContent,
-				frontmatter,
-			);
+		const hasImages = await this.checkForImages(file);
+		if (hasImages) {
+			console.log("This file contains embedded images.", hasImages);
+			// 여기에 이미지가 포함된 경우의 추가 로직을 구현할 수 있습니다
 		}
+
+		const filename = file.basename.slice(0, 50);
+		if (isFrontMatter(frontmatter) && frontmatter.wsPostId) {
+			await this.updateExistingPost(client, frontmatter.wsPostId, {
+				title: frontmatter.wsTitle || filename,
+				formattedContent,
+			});
+		} else {
+			await this.createNewPost(client, file, frontmatter, {
+				title: filename,
+				formattedContent,
+			});
+		}
+	}
+
+	private async confirmPublish(initialTitle: string): Promise<string> {
+		return new Promise((resolve) => {
+			const modal = new ConfirmPublishModal(
+				this.app,
+				initialTitle,
+				(result) => {
+					resolve(result);
+				}
+			);
+			modal.open();
+		});
 	}
 
 	private async createNewPost(
 		client: Client,
 		file: TFile,
-		title: string,
-		formattedContent: string,
-		frontmatter: any,
+		frontmatter: FrontMatter | FrontMatterCache,
+		post: Partial<PostContent> &
+			Pick<PostContent, "title" | "formattedContent">
 	) {
-		const results = await client.publishPost({
-			title,
-			coverImageKey: "",
-			formattedContent,
-			bodyImageKeys: [],
-		});
-		frontmatter["socialPostId"] = results.postId;
-		const newFileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${formattedContent}`;
-		await this.app.vault.modify(file, newFileContent);
-		return new Notice("Post created successfully!");
+		try {
+			const confirmedTitle = await this.confirmPublish(post.title);
+			const results = await client.publishPost({
+				title: confirmedTitle,
+				coverImageKey: post.coverImageKey ?? "",
+				formattedContent: post.formattedContent,
+				bodyImageKeys: post.bodyImageKeys ?? [],
+			});
+			frontmatter[FRONTMATTER_KEYS.WS_POST_ID] = results.postId;
+			frontmatter[FRONTMATTER_KEYS.WS_TITLE] = confirmedTitle;
+			const newFileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${
+				post.formattedContent
+			}`;
+			await this.app.vault.modify(file, newFileContent);
+			return new Notice("Post created successfully!");
+		} catch (err) {
+			console.error(err);
+		}
 	}
 
 	private async updateExistingPost(
 		client: Client,
 		postId: number,
-		title: string,
-		formattedContent: string,
+		post: Partial<PostContent> &
+			Pick<PostContent, "title" | "formattedContent">
 	) {
 		await client.updatePost(postId, {
-			title,
-			coverImageKey: "",
-			formattedContent,
-			bodyImageKeys: [],
+			title: post.title,
+			coverImageKey: post.coverImageKey ?? "",
+			formattedContent: post.formattedContent,
+			bodyImageKeys: post.bodyImageKeys ?? [],
 		});
 		return new Notice("Post updated successfully!");
 	}
@@ -118,18 +147,37 @@ export default class WantedPublisherPlugin extends Plugin {
 			this.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!markdownView?.file) {
 			throw new Error(
-				"No open note found. Please open a note to publish.",
+				"No open note found. Please open a note to publish."
 			);
 		}
 		return markdownView.file;
 	}
 
+	private async checkForImages(file: TFile): Promise<boolean> {
+		// 파일의 메타데이터 캐시를 가져옵니다
+		const cache = this.app.metadataCache.getFileCache(file);
+
+		if (cache && cache.embeds) {
+			// 임베드된 파일 중 이미지 파일만 필터링합니다
+			const imageEmbeds = cache.embeds.filter((embed) => {
+				const extension =
+					embed.link.split(".").pop()?.toLowerCase() ?? "";
+				return ["png", "jpg", "jpeg", "gif", "bmp", "svg"].includes(
+					extension
+				);
+			});
+
+			// 이미지 임베드가 하나 이상 있으면 true를 반환합니다
+			return imageEmbeds.length > 0;
+		}
+
+		return false;
+	}
+
 	private async preparePublishData(file: TFile): Promise<{
-		title: string;
 		formattedContent: string;
 		frontmatter: FrontMatterCache;
 	}> {
-		const title = file.basename.slice(0, 50);
 		const content = await this.app.vault.read(file);
 		const formattedContent = getContentWithoutFrontmatter(content);
 		if (!formattedContent) {
@@ -137,12 +185,12 @@ export default class WantedPublisherPlugin extends Plugin {
 		}
 		const frontmatter =
 			this.app.metadataCache.getFileCache(file)?.frontmatter || {};
-		return { title, formattedContent, frontmatter };
+		return { formattedContent, frontmatter };
 	}
 
 	async processFrontMatter(file: TFile): Promise<FrontMatterCache> {
 		return new Promise((resolve) =>
-			this.app.fileManager.processFrontMatter(file, resolve),
+			this.app.fileManager.processFrontMatter(file, resolve)
 		);
 	}
 

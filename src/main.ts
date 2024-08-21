@@ -22,6 +22,7 @@ import ConfirmPublishModal from "./modals/confirm-publish-modal";
 import type { PostContent, PostDetail } from "./apis/models";
 import ImportModal from "./modals/import-modal";
 import { moment } from "obsidian";
+import { cleanFilename } from "./helpers/utils";
 
 export default class WantedPublisherPlugin extends Plugin {
 	settings: WantedPublisherPluginSettings;
@@ -82,12 +83,13 @@ export default class WantedPublisherPlugin extends Plugin {
 		const fileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${
 			post.formattedContent
 		}`;
+		const fileName = cleanFilename(post.title);
 		try {
-			return await this.app.vault.create(`${post.title}.md`, fileContent);
+			return await this.app.vault.create(`${fileName}.md`, fileContent);
 		} catch (err) {
 			if (err.message.includes("File already exists")) {
 				return await this.app.vault.create(
-					`${post.title}(2).md`,
+					`${fileName}(2).md`,
 					fileContent
 				);
 			}

@@ -6,7 +6,7 @@ import {
 	TFile,
 	stringifyYaml,
 } from "obsidian";
-import Client, { PostContent } from "./apis/client";
+import Client from "./apis/client";
 import {
 	DEFAULT_SETTINGS,
 	FRONTMATTER_KEYS,
@@ -19,6 +19,7 @@ import {
 import WantedPublisherSettingTab from "./setting-tab";
 import { FrontMatter } from "./types";
 import ConfirmPublishModal from "./modals/confirm-publish-modal";
+import type { PostContent } from "./apis/models";
 
 export default class WantedPublisherPlugin extends Plugin {
 	settings: WantedPublisherPluginSettings;

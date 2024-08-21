@@ -1,33 +1,8 @@
 import { requestUrl, RequestUrlResponse } from "obsidian";
+import type { PostContent, PostDetail, PublishResponse, Team } from "./models";
 
 const API_URL = process.env.API_URL || "http://localhost:3000";
 const COOKIE_NAME = process.env.COOKIE_NAME || "accessToken";
-
-export interface PostContent {
-	title: string;
-	coverImageKey: string;
-	formattedContent: string;
-	bodyImageKeys: string[];
-}
-
-export interface PublishResponse {
-	postId: number;
-}
-
-export interface Team {
-	isCreator: boolean;
-	isFollowed: boolean;
-	id: number;
-	name: string;
-	description: string;
-	viewsCount: number;
-	avatar: string | null;
-	creatorId: number;
-	isPublic: boolean;
-	type: string;
-	followerCount: number;
-	url: string;
-}
 
 export default class Client {
 	constructor(private readonly accessToken: string) {}
@@ -49,6 +24,10 @@ export default class Client {
 			"PUT",
 			post
 		);
+	}
+
+	async getPost(postId: number) {
+		return this.makeRequest<PostDetail>(`/social/articles/${postId}`);
 	}
 
 	async getTeamList(): Promise<Team[]> {

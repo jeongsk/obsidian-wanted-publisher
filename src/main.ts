@@ -19,7 +19,9 @@ import {
 import WantedPublisherSettingTab from "./setting-tab";
 import { FrontMatter } from "./types";
 import ConfirmPublishModal from "./modals/confirm-publish-modal";
-import type { PostContent } from "./apis/models";
+import type { PostContent, PostDetail } from "./apis/models";
+import ImportModal from "./modals/import-modal";
+import { moment } from "obsidian";
 
 export default class WantedPublisherPlugin extends Plugin {
 	settings: WantedPublisherPluginSettings;
@@ -27,17 +29,70 @@ export default class WantedPublisherPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.addPublishCommand();
+		this.addCommands();
 
 		this.addSettingTab(new WantedPublisherSettingTab(this.app, this));
 	}
 
-	private addPublishCommand() {
+	private addCommands() {
 		this.addCommand({
 			id: "publish",
 			name: "Publish",
 			callback: () => this.handlePublish(),
 		});
+
+		this.addCommand({
+			id: "import-post",
+			name: "Import post from URL",
+			callback: () => {
+				new ImportModal(this.app, (url) => this.importPost(url)).open();
+			},
+		});
+	}
+
+	private async importPost(url: string) {
+		try {
+			const client = new Client(this.settings.token);
+			const postId = Number(url.split("/").last());
+			const post = await client.getPost(postId);
+			console.log(post);
+
+			if (post) {
+				const file = await this.createNoteFile(post);
+
+				this.app.workspace.getLeaf().openFile(file);
+
+				new Notice("Post imported successfully!");
+			} else {
+				new Notice("Failed to import post. Post not found.");
+			}
+		} catch (error) {
+			console.error("Error importing post:", error);
+			new Notice("Failed to import post. See console for details.");
+		}
+	}
+
+	private async createNoteFile(post: PostDetail) {
+		const frontmatter = {
+			wsPostId: post.id,
+			wsTitle: post.title,
+			wsCoverImage: post.coverImage,
+			wsCreatedAt: moment(post.createdAt).format("YYYY-MM-DD HH:mm:ss"),
+		};
+		const fileContent = `---\n${stringifyYaml(frontmatter)}\n---\n${
+			post.formattedContent
+		}`;
+		try {
+			return await this.app.vault.create(`${post.title}.md`, fileContent);
+		} catch (err) {
+			if (err.message.includes("File already exists")) {
+				return await this.app.vault.create(
+					`${post.title}(2).md`,
+					fileContent
+				);
+			}
+			throw err;
+		}
 	}
 
 	private async handlePublish() {

@@ -134,6 +134,7 @@ export default class WantedPublisherPlugin extends Plugin {
 			await this.updateExistingPost(client, frontmatter.wsPostId, {
 				title: frontmatter.wsTitle || filename,
 				formattedContent,
+				coverImageKey: frontmatter.wsCoverImage,
 			});
 		} else {
 			await this.createNewPost(client, file, frontmatter, {

@@ -8,4 +8,5 @@ export type FrontMatter = FrontMatterCache & {
 	[FRONTMATTER_KEYS.WS_POST_ID]: number;
 	[FRONTMATTER_KEYS.WS_TEAM_ID]: number;
 	[FRONTMATTER_KEYS.WS_TITLE]: string;
+	[FRONTMATTER_KEYS.WS_COVER_IMAGE]: string;
 };
